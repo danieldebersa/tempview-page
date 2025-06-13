@@ -121,6 +121,86 @@
             font-size: 12px;
         }
 
+        /* Flutter Dialog styles */
+        .flutter-dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.32);
+            z-index: 1000;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .flutter-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--surface-color);
+            border-radius: 28px;
+            padding: 24px;
+            min-width: 280px;
+            max-width: 90%;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .flutter-dialog-title {
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--text-primary);
+            margin: 0 0 16px 0;
+        }
+
+        .flutter-dialog-content {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .flutter-dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .flutter-button {
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .flutter-button:active {
+            background: rgba(33, 150, 243, 0.12);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translate(-50%, -40%);
+            }
+            to { 
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
         @media (max-width: 600px) {
             main {
                 padding: 8px;
@@ -162,6 +242,38 @@
     <footer>
         <p>© 2025 Smart DHT | <i class="fas fa-code"></i> con <i class="fas fa-heart"></i> por Dev Daniel Debersa</p>
     </footer>
+
+    <!-- Flutter Dialog for sensor alert -->
+    <div class="flutter-dialog-overlay" id="sensorAlert">
+        <div class="flutter-dialog">
+            <h3 class="flutter-dialog-title">
+                <i class="fas fa-exclamation-triangle" style="color: #f44336;"></i> 
+                Error de Conexión
+            </h3>
+            <div class="flutter-dialog-content">
+                El sensor DHT no está respondiendo. Por favor, verifique la conexión del dispositivo.
+            </div>
+            <div class="flutter-dialog-actions">
+                <button class="flutter-button" onclick="dismissAlert()">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flutter Dialog for reconnection success -->
+    <div class="flutter-dialog-overlay" id="reconnectedAlert">
+        <div class="flutter-dialog">
+            <h3 class="flutter-dialog-title">
+                <i class="fas fa-check-circle" style="color: #4CAF50;"></i> 
+                Conexión Establecida
+            </h3>
+            <div class="flutter-dialog-content">
+                Se ha restablecido la conexión con el sensor DHT exitosamente.
+            </div>
+            <div class="flutter-dialog-actions">
+                <button class="flutter-button" onclick="dismissReconnectedAlert()">Entendido</button>
+            </div>
+        </div>
+    </div>
     
     <!-- Firebase SDK Modular -->
     <script type="module">
@@ -187,6 +299,11 @@
         const analytics = getAnalytics(app);
         const database = getDatabase(app);
 
+        let lastUpdateTime = Date.now();
+        let timeoutCheck;
+        let alertShown = false;
+        let wasDisconnected = false;
+
         // Función para calcular la sensación térmica
         function calculateHeatIndex(temp, hum) {
             let t = parseFloat(temp);
@@ -199,16 +316,64 @@
         const humidityRef = ref(database, 'DHT_11/Humidity');
         const temperatureRef = ref(database, 'DHT_11/Temperature');
 
+        // Función para mostrar la alerta
+        function showAlert() {
+            if (!alertShown) {
+                document.getElementById('sensorAlert').style.display = 'block';
+                alertShown = true;
+                wasDisconnected = true;
+            }
+        }
+
+        // Función para ocultar la alerta
+        function dismissAlert() {
+            document.getElementById('sensorAlert').style.display = 'none';
+            alertShown = false;
+        }
+
+        // Función para mostrar la alerta de reconexión
+        function showReconnectedAlert() {
+            document.getElementById('reconnectedAlert').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('reconnectedAlert').style.display = 'none';
+            }, 3000); // Se cierra automáticamente después de 3 segundos
+        }
+
+        // Función para ocultar la alerta de reconexión
+        function dismissReconnectedAlert() {
+            document.getElementById('reconnectedAlert').style.display = 'none';
+        }
+
+        // Función para verificar la conexión
+        function checkConnection() {
+            const timeSinceLastUpdate = Date.now() - lastUpdateTime;
+            if (timeSinceLastUpdate > 30000) { // 30 seconds
+                showAlert();
+            }
+        }
+
         // Escuchar cambios en tiempo real
         onValue(humidityRef, (snapshot) => {
             const humi = snapshot.val();
             document.getElementById('humidity').innerHTML = humi + "%";
+            lastUpdateTime = Date.now();
+            if (wasDisconnected) {
+                dismissAlert();
+                showReconnectedAlert();
+                wasDisconnected = false;
+            }
             updateHeatIndex();
         });
 
         onValue(temperatureRef, (snapshot) => {
             const temp = snapshot.val();
             document.getElementById('temperature').innerHTML = temp + "&#8451;";
+            lastUpdateTime = Date.now();
+            if (wasDisconnected) {
+                dismissAlert();
+                showReconnectedAlert();
+                wasDisconnected = false;
+            }
             updateHeatIndex();
         });
 
@@ -220,6 +385,9 @@
                 document.getElementById('heatIndex').innerHTML = hi + "&#8451;";
             }
         }
+
+        // Iniciar verificación periódica
+        setInterval(checkConnection, 5000); // Verificar cada 5 segundos
     </script>
 </body>
 </html>
