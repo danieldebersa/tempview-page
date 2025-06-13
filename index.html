@@ -10,189 +10,155 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style type="text/css">
         :root {
-            --primary-color: #1976d2;
-            --secondary-color: #2196f3;
-            --accent-color: #64b5f6;
-            --surface-color: #ffffff;
-            --background-color: #f5f5f5;
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --surface-color: #FFFFFF;
+            --background-color: #F5F5F5;
             --text-primary: rgba(0, 0, 0, 0.87);
             --text-secondary: rgba(0, 0, 0, 0.6);
+            --elevation-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --elevation-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
         }
 
+        /* Flutter Scaffold simulation */
         body {
             background-color: var(--background-color);
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
         }
 
-        .status-bar {
+        /* Flutter AppBar simulation */
+        .app-bar {
             background: var(--primary-color);
-            height: 24px;
-            position: fixed;
+            color: white;
+            padding: 16px;
+            box-shadow: var(--elevation-1);
+            position: sticky;
             top: 0;
-            left: 0;
-            right: 0;
             z-index: 1000;
+            display: flex;
+            align-items: center;
+            min-height: 56px;
         }
 
+        .app-bar h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        /* Flutter SafeArea simulation */
         main {
-            margin-top: 24px;
+            flex: 1;
             padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .data-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
-            padding: 16px;
-        }
-
+        /* Flutter Card simulation */
         .data-item {
             background: var(--surface-color);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--elevation-1);
+            transition: box-shadow 0.3s;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-            transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .data-item:active {
-            background-color: rgba(0, 0, 0, 0.04);
+            box-shadow: var(--elevation-2);
         }
 
-        .data-head {
-            background: var(--primary-color);
-            color: white;
-            font-size: 20px;
+        /* Flutter Text styles */
+        .data-item h2 {
+            font-size: 14px;
             font-weight: 500;
-            padding: 16px;
-            margin: -16px -16px 16px -16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: var(--text-secondary);
+            margin: 0 0 8px 0;
+            letter-spacing: 0.1px;
         }
 
         .value {
             font-size: 34px;
-            color: var(--primary-color);
+            color: var(--text-primary);
             font-weight: 400;
-            margin: 8px 0;
-        }
-
-        .data-item h2 {
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--text-secondary);
             margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            line-height: 1.2;
         }
 
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent-color);
+        /* Flutter Material Ink effect simulation */
+        .data-item::before {
+            content: '';
             position: absolute;
-            top: 16px;
-            right: 16px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: currentColor;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
+        .data-item:active::before {
+            opacity: 0.1;
+        }
+
+        /* Flutter BottomNavigationBar simulation */
         footer {
             background: var(--surface-color);
             color: var(--text-secondary);
             padding: 16px;
             text-align: center;
-            box-shadow: 0 -1px 3px rgba(0,0,0,0.12);
+            box-shadow: var(--elevation-1);
+            font-size: 12px;
         }
 
         @media (max-width: 600px) {
-            .data-container {
-                grid-template-columns: 1fr;
+            main {
                 padding: 8px;
-                gap: 8px;
             }
 
             .data-item {
-                border-radius: 4px;
+                border-radius: 8px;
                 margin-bottom: 8px;
-            }
-
-            .data-head {
-                font-size: 18px;
-                padding: 12px;
-            }
-
-            .value {
-                font-size: 28px;
-            }
-        }
-
-        /* Efecto Ripple */
-        .data-item {
-            position: relative;
-        }
-
-        .data-item::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(0, 0, 0, 0.1);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
-
-        .data-item:active::after {
-            animation: ripple 0.4s ease-out;
-        }
-
-        @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 0.5;
-            }
-            100% {
-                transform: scale(40, 40);
-                opacity: 0;
             }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="status-bar"></div>
-    <main>
-        <div class="data-head">
-            <i class="fas fa-microchip"></i> Monitor DHT
-        </div>
+    <!-- Flutter Scaffold AppBar -->
+    <header class="app-bar">
+        <h1><i class="fas fa-microchip"></i> Monitor DHT</h1>
+    </header>
 
+    <!-- Flutter body content -->
+    <main>
         <div class="data-container">
             <div class="data-item">
-                <div class="status-indicator"></div>
                 <h2><i class="fas fa-temperature-high"></i> Temperatura</h2>
                 <p class="value" id="temperature">22 &#8451;</p>
             </div>
             <div class="data-item">
-                <div class="status-indicator"></div>
                 <h2><i class="fas fa-tint"></i> Humedad</h2>
                 <p class="value" id="humidity">10%</p>
             </div>
             <div class="data-item">
-                <div class="status-indicator"></div>
                 <h2><i class="fas fa-thermometer-half"></i> Sensación Térmica</h2>
                 <p class="value" id="heatIndex">--°C</p>
             </div>
         </div>
     </main>
 
+    <!-- Flutter BottomNavigationBar -->
     <footer>
         <p>© 2025 Smart DHT | <i class="fas fa-code"></i> con <i class="fas fa-heart"></i> por Dev Daniel Debersa</p>
     </footer>
